@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# Block access to sensitive files
+<FilesMatch "^\.env|composer\.(json|lock)|package(-lock)?\.json|\.git|\.gitignore|phpunit\.xml|README\.md|Dockerfile|docker-compose\.yml">
+    Require all denied
+</FilesMatch>
+
+# Block access to sensitive directories
+RewriteRule ^(src|vendor|bin|tests|database)/ - [F,L]
+
+# Route everything else to index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]

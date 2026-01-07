@@ -10,6 +10,7 @@
                     <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
                 <?php endif; ?>
                 <form action="/login" method="POST">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                     <div class="mb-3">
                         <label>Email</label>
                         <input type="email" name="email" class="form-control" required>
