@@ -52,4 +52,13 @@ class AuthController extends Controller
             $this->render('auth/login', ['error' => 'Invalid credentials', 'csrf_token' => $_SESSION['csrf_token']]);
         }
     }
+
+    public function logout()
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        session_destroy();
+        $this->redirect('/');
+    }
 }
