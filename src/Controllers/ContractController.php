@@ -120,4 +120,87 @@ class ContractController extends Controller
         ]);
     }
 
+    public function edit()
+    {
+        $this->checkAuth();
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            $this->redirect('/contracts');
+        }
+        $contract = Contract::find($id);
+        if (!$contract) {
+            $this->redirect('/contracts');
+        }
+
+        $suppliers = Supplier::all();
+        $users = User::all();
+        // Pre-fetch responsibles to select in edit form
+        $responsibles = ContractResponsible::getByContract($id);
+        $responsibleIds = array_map(function($r) { return $r->user_id; }, $responsibles);
+
+        $this->render('contracts/create', [
+            'contract' => $contract,
+            'suppliers' => $suppliers,
+            'users' => $users,
+            'responsibleIds' => $responsibleIds
+        ]);
+    }
+
+    public function update()
+    {
+        $this->checkAuth();
+        $id = $_POST['id'] ?? null;
+        if (!$id) {
+            $this->redirect('/contracts');
+        }
+        $contract = Contract::find($id);
+        if (!$contract) {
+            $this->redirect('/contracts');
+        }
+
+        $contract->number = $_POST['number'];
+        $contract->detailed_number = $_POST['detailed_number'];
+        $contract->modality_code = $_POST['modality_code'];
+        $contract->modality_name = $_POST['modality_name'];
+        $contract->fiscal_name_raw = $_POST['fiscal_name_raw'];
+        $contract->exercise = $_POST['exercise'];
+        $contract->legal_basis = $_POST['legal_basis'];
+        $contract->procedure_number = $_POST['procedure_number'];
+        $contract->supplier_id = $_POST['supplier_id'] ?: null;
+
+        $contract->value_total = str_replace(',', '.', str_replace('.', '', $_POST['value_total']));
+        $contract->date_start = $_POST['date_start'];
+        $contract->date_end_current = $_POST['date_end_current'];
+        $contract->description_full = $_POST['description_full'];
+        $contract->description_short = substr($_POST['description_full'], 0, 180);
+        $contract->has_renewal = isset($_POST['has_renewal']) ? 1 : 0;
+        $contract->max_renewals = $_POST['max_renewals'] ?: null;
+        $contract->manager_user_id = $_POST['manager_user_id'] ?: null;
+
+        $contract->calculateRiskAndNextAction();
+
+        if ($contract->save()) {
+             // Handle Responsibles - Simple strategy: delete all and recreate
+             // Not efficient but works for small number
+             $db = \App\Core\Database::getInstance()->getConnection();
+             $stmt = $db->prepare("DELETE FROM contract_responsibles WHERE contract_id = :id");
+             $stmt->execute(['id' => $contract->id]);
+
+            if (!empty($_POST['responsibles']) && is_array($_POST['responsibles'])) {
+                foreach ($_POST['responsibles'] as $userId) {
+                     $resp = new ContractResponsible();
+                     $resp->contract_id = $contract->id;
+                     $resp->user_id = $userId;
+                     $resp->role_in_contract = 'FISCAL';
+                     $resp->save();
+                }
+            }
+
+            Log::create($_SESSION['user_id'], 'UPDATE_CONTRACT', "Atualizou contrato {$contract->number}");
+            $this->redirect('/contracts/view?id=' . $contract->id);
+        } else {
+             $this->redirect('/contracts/edit?id=' . $contract->id);
+        }
+    }
+
 }

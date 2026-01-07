@@ -3,7 +3,10 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Contrato <?= htmlspecialchars($contract->number) ?></h1>
-    <a href="/contracts" class="btn btn-secondary">Voltar</a>
+    <div>
+        <a href="/contracts/edit?id=<?= $contract->id ?>" class="btn btn-outline-primary me-2">Editar</a>
+        <a href="/contracts" class="btn btn-secondary">Voltar</a>
+    </div>
 </div>
 
 <!-- Header -->
