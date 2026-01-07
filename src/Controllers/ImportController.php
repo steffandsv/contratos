@@ -52,32 +52,42 @@ class ImportController extends Controller
         }
 
         $header = fgetcsv($handle, 0, ';'); // Assuming semi-colon separator
-        // Mapping based on index in header could be dynamic, but spec says "Fixed header"
-        // Let's assume standard order or map by name if we wanted to be robust.
-        // For now, I'll map based on the column names in the spec to find index.
 
+        // Normalize header for comparison (remove special chars, lowercase)
+        $normalize = function($s) {
+            $s = mb_strtolower($s, 'UTF-8');
+            // Replace various 'N°' 'Nº' with 'n'
+            $s = str_replace(['n°', 'nº', 'º', '°'], 'n', $s);
+            $s = preg_replace('/[^a-z0-9]/', '', $s);
+            return $s;
+        };
+
+        $normalizedHeader = array_map($normalize, $header);
+
+        // Map simplified keys to DB fields
+        // 'N° Contrato' -> 'ncontrato'
         $columnMap = [
-            'N° Contrato' => 'number',
-            'Nº Detalhado do Contrato' => 'detailed_number',
-            'N° Modalidade' => 'modality_code',
-            'Modalidade' => 'modality_name',
-            'Exercício' => 'exercise',
-            'Fundamento Legal' => 'legal_basis',
-            'Proc. Licitatório' => 'procedure_number',
-            'CPF/CNPJ Fornecedor' => 'supplier_doc',
-            'Fornecedor' => 'supplier_name',
-            'Valor' => 'value_total',
-            'Vigência Inicial' => 'date_start',
-            'Vencimento Atual' => 'date_end_current',
-            'Objeto' => 'description_full',
-            'Tipo' => 'type_code',
-            'Contrato de Rateio' => 'rateio_code',
-            'Fiscal' => 'fiscal_name_raw'
+            'ncontrato' => 'number',
+            'ndetalhadodocontrato' => 'detailed_number',
+            'nmodalidade' => 'modality_code',
+            'modalidade' => 'modality_name',
+            'exercicio' => 'exercise',
+            'fundamentolegal' => 'legal_basis',
+            'proclicitatorio' => 'procedure_number',
+            'cpfcnpjfornecedor' => 'supplier_doc',
+            'fornecedor' => 'supplier_name',
+            'valor' => 'value_total',
+            'vigenciainicial' => 'date_start',
+            'vencimentoatual' => 'date_end_current',
+            'objeto' => 'description_full',
+            'tipo' => 'type_code',
+            'contratoderateio' => 'rateio_code',
+            'fiscal' => 'fiscal_name_raw'
         ];
 
         $indices = [];
-        foreach ($columnMap as $csvName => $dbField) {
-            $index = array_search($csvName, $header);
+        foreach ($columnMap as $simpleKey => $dbField) {
+            $index = array_search($simpleKey, $normalizedHeader);
             if ($index !== false) {
                 $indices[$dbField] = $index;
             }
