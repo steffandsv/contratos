@@ -46,8 +46,9 @@ A estrutura segue padrões modernos (PSR-4) para garantir organização e facili
   - `dashboard/`
   - `contracts/`
   - `users/`
-- `/public/` - Document Root (único ponto exposto ao servidor web)
+- `/` - Root da Aplicação (Hospedagem Compartilhada)
   - `index.php` – Entry point
+  - `.htaccess` - Configuração do Apache
   - `css/`
   - `js/`
   - `img/`
@@ -566,7 +567,7 @@ Processo:
 
 ### 9.1. `manifest.json`
 
-Na pasta `/public/manifest.json`:
+Na pasta `/manifest.json`:
 
 - Nome do app (ex.: “Contratos – Jaborandi”).
 - Ícones (512, 192, 64).

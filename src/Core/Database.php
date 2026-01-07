@@ -24,7 +24,9 @@ class Database
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            die("Database connection failed: " . $e->getMessage());
+            // Log error to server error log and show generic message
+            error_log("Database connection failed: " . $e->getMessage());
+            die("Service temporarily unavailable. Please try again later.");
         }
     }
 

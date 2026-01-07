@@ -17,8 +17,8 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
-# Configure Apache DocumentRoot to public
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+# Configure Apache DocumentRoot to root
+ENV APACHE_DOCUMENT_ROOT /var/www/html
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 
