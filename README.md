@@ -31,45 +31,37 @@ Sistema web simples, em PHP + MySQL (index.php na raiz), com PWA, para:
 
 ---
 
-## 3. Estrutura de Pastas (Hospedagem Compartilhada)
+## 3. Estrutura de Pastas (Modernizada)
 
-Na pasta raiz do domínio:
+A estrutura segue padrões modernos (PSR-4) para garantir organização e facilidade de manutenção.
 
-- `/index.php` – front controller, roteia tudo.
-- `/config/`
-  - `config.php` – dados de conexão com MySQL, timezone, e-mail remetente etc.
-- `/controllers/`
-  - `AuthController.php`
-  - `DashboardController.php`
-  - `ContractController.php`
-  - `UserController.php`
-  - `ImportController.php`
-  - `NotificationController.php`
-- `/models/`
-  - `User.php`
-  - `Contract.php`
-  - `Supplier.php`
-  - `Notification.php`
-  - `Setting.php`
-  - `Log.php`
-- `/views/`
+- `/src/` - Classes PHP da aplicação (Namespace `App\`)
+  - `Controllers/` - Controladores das rotas
+  - `Models/` - Modelos de acesso a dados
+  - `Core/` - Framework base (Router, Database, View)
+  - `Config.php` - Classe de configuração
+- `/views/` - Templates (HTML/PHP misto)
   - `layout.php` (layout base)
-  - `auth/login.php`
-  - `dashboard/index.php`
-  - `contracts/list.php`
-  - `contracts/view.php`
-  - `contracts/form.php`
-  - `import/index.php`
-  - `users/list.php`
-  - `users/form.php`
-- `/public/`
-  - `css/` (CSS, pode usar Bootstrap)
+  - `auth/`
+  - `dashboard/`
+  - `contracts/`
+  - `users/`
+- `/public/` - Document Root (único ponto exposto ao servidor web)
+  - `index.php` – Entry point
+  - `css/`
   - `js/`
   - `img/`
   - `manifest.json`
   - `service-worker.js`
-- `/cron/`
-  - `cron_notifications.php` (executado via CRON do servidor)
+- `/database/`
+  - `schema.sql` - Estrutura do banco de dados
+- `/tests/`
+  - Testes unitários e de integração
+- `/bin/`
+  - Scripts utilitários (ex: migração)
+- `docker-compose.yml` - Orquestração de containers
+- `Dockerfile` - Definição do ambiente PHP
+- `composer.json` - Dependências PHP
 
 ---
 
@@ -260,7 +252,7 @@ Regras iniciais:
 
 ### 6.2. Tela de importação
 
-URL sugerida: `/index.php?route=import`
+URL sugerida: `/import`
 
 Elementos:
 
@@ -328,7 +320,7 @@ Regras:
 
 ### 7.2. Dashboard (Home após login)
 
-URL: `/index.php?route=dashboard`
+URL: `/dashboard`
 
 #### Bloco 1 – Indicadores grandes (cards no topo)
 
@@ -372,7 +364,7 @@ Cada item com link para o contrato.
 
 ### 7.3. Lista de contratos
 
-URL: `/index.php?route=contracts`
+URL: `/contracts`
 
 Filtros no topo:
 
@@ -401,7 +393,7 @@ Ordenação padrão: `date_end_current` ascendente.
 
 ### 7.4. Detalhe do contrato
 
-URL: `/index.php?route=contract/view&id=X`
+URL: `/contract/view?id=X`
 
 Estrutura:
 
@@ -508,7 +500,7 @@ Botões:
 
 ### 7.6. Administração de usuários
 
-URL: `/index.php?route=users` (somente ADMIN)
+URL: `/users` (somente ADMIN)
 
 - Lista de usuários:
   - Nome, e-mail, perfil, status (ativo/inativo).
@@ -540,7 +532,7 @@ URL: `/index.php?route=users` (somente ADMIN)
 
 ### 8.1. Agendamento diário
 
-Arquivo: `/cron/cron_notifications.php`
+Arquivo: `/bin/cron_notifications.php`
 
 Executado 1x por dia (ex.: 06:00, horário do servidor).
 
@@ -578,7 +570,7 @@ Na pasta `/public/manifest.json`:
 
 - Nome do app (ex.: “Contratos – Jaborandi”).
 - Ícones (512, 192, 64).
-- `start_url`: `/index.php`.
+- `start_url`: `/`.
 - `display`: `standalone`.
 - `theme_color` e `background_color`.
 
@@ -594,7 +586,7 @@ Funções mínimas:
 
 No layout principal (`views/layout.php`), incluir:
 
-- `<link rel="manifest" href="/public/manifest.json">`
+- `<link rel="manifest" href="/manifest.json">`
 - Registro do service worker via JavaScript.
 
 ---
@@ -606,6 +598,7 @@ No layout principal (`views/layout.php`), incluir:
 - Senhas com `password_hash()` e `password_verify()`.
 - Proteção mínima de CSRF (token em formulários sensíveis).
 - Filtrar/escapar todos os dados vindos de `$_POST`/`$_GET`.
+- Uso de PDO com Prepared Statements para todas as queries.
 
 ---
 
@@ -625,4 +618,17 @@ No layout principal (`views/layout.php`), incluir:
 10. Implementar PWA (manifest, service worker, registro).
 11. Refinar textos das notificações e pequenos ajustes visuais.
 
+## 12. Instalação e Ambiente
 
+O projeto utiliza Docker e Composer para facilitar o desenvolvimento e deploy.
+
+### 12.1 Pré-requisitos
+- Docker
+- Docker Compose
+
+### 12.2 Configuração
+1. Copie `.env.example` para `.env` e ajuste as credenciais do banco.
+2. Execute `docker-compose up -d --build`.
+3. Instale dependências: `docker-compose exec web composer install`.
+4. Rode as migrações: `docker-compose exec web php bin/migrate.php`.
+5. Acesse `http://localhost:8080`.
