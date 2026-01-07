@@ -206,7 +206,7 @@ class Contract
             // Check fiscal existence (simplified check, ideal would be to check db relation too, but for initial calc we check raw field)
             if (empty($this->fiscal_name_raw) && (!isset($this->id) || count(ContractResponsible::getByContract($this->id)) == 0)) {
                 $this->status_risk = 'AGIR';
-            } elseif ($daysRemaining > 120) {
+            } elseif ($daysRemaining > 90) {
                 $this->status_risk = 'TRANQUILO';
             } elseif ($daysRemaining > 60) {
                 $this->status_risk = 'PLANEJAR';
